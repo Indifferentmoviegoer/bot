@@ -1,3 +1,4 @@
+import io.github.cdimascio.dotenv.Dotenv;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -22,11 +23,13 @@ public class Bot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return "TramramBot";
+        Dotenv dotenv = Dotenv.load();
+        return dotenv.get("BOT_USERNAME");
     }
 
     @Override
     public String getBotToken() {
-        return "1742064904:AAHvSA6L_27mXHsV5Mrt1jk-eNLjQY2AXTE";
+        Dotenv dotenv = Dotenv.load();
+        return dotenv.get("BOT_TOKEN");
     }
 }
