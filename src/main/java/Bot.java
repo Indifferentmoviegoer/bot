@@ -5,6 +5,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 public class Bot extends TelegramLongPollingBot {
+    private static final Dotenv DOTENV = Dotenv.load();
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -23,13 +24,11 @@ public class Bot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        Dotenv dotenv = Dotenv.load();
-        return dotenv.get("BOT_USERNAME");
+        return DOTENV.get("BOT_USERNAME");
     }
 
     @Override
     public String getBotToken() {
-        Dotenv dotenv = Dotenv.load();
-        return dotenv.get("BOT_TOKEN");
+        return DOTENV.get("BOT_TOKEN");
     }
 }
