@@ -1,1 +1,1 @@
-web: java $JAVA_OPTS -cp ./target/classes:./target/dependency/* com.tt.bot.Main
+web: java -jar build/libs/infoooooooooooooooooo-0.1.3.jar
