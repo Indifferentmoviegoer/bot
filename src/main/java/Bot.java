@@ -24,6 +24,7 @@ public class Bot extends TelegramLongPollingBot {
             while (true) {
                 try {
                     message.setText(this.getAvailablePoints());
+
                 } catch (IOException e) {
                     e.printStackTrace();
 
