@@ -1,3 +1,5 @@
+package com.tt.bot;
+
 import io.github.cdimascio.dotenv.Dotenv;
 import okhttp3.*;
 import org.json.JSONArray;
