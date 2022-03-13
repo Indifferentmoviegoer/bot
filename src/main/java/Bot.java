@@ -91,13 +91,16 @@ public class Bot extends TelegramLongPollingBot {
                     JSONObject limitJson = (JSONObject) limit;
 
                     result
-                            .append("Максимум: ")
+                            .append("Валюта: ")
+                            .append(limitJson.getString("currency"))
+                            .append(" \n")
+                            .append("Лимиты: ")
                             .append(limitJson.getBigInteger("max"))
                             .append(" \n")
                             .append("Номиналы: ")
                             .append(limitJson.getJSONArray("denominations"))
                             .append(" \n")
-                            .append("Сумма: ")
+                            .append("Доступная сумма: ")
                             .append(limitJson.getBigInteger("amount"))
                             .append(" \n\n");
                 }
