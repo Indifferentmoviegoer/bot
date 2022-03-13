@@ -41,7 +41,7 @@ public class Bot extends TelegramLongPollingBot {
                 }
 
                 try {
-                    Thread.sleep(300000);
+                    Thread.sleep(600000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
