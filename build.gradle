@@ -18,19 +18,11 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.9.3'
 }
 
-jar {
-    baseName = 'tinkoffBot'
-    version = '0.1.4'
-    manifest {
-        attributes(
-                'Main-Class': 'ru.tinkoff.telegram.bot.BotApplication'
-        )
-    }
+task stage(type: Copy) {
+    from sourceSets.main.runtimeClasspath
+    into 'build/staging'
 }
-
-task stage {
-    dependsOn build
-}
+stage.dependsOn build
 
 test {
     useJUnitPlatform()
