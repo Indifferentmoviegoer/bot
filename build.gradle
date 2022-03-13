@@ -9,8 +9,14 @@ repositories {
     mavenCentral()
 }
 
-tasks.create("stage") {
-    dependsOn("installDist")
+
+jar {
+    baseName = 'infoooooooooooooooooo'
+    version = '0.1.0'
+}
+
+task stage {
+    dependsOn build
 }
 
 dependencies {
