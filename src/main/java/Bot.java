@@ -104,7 +104,7 @@ public class Bot extends TelegramLongPollingBot {
             }
         }
 
-        if (!result.isEmpty()) {
+        if (!result.toString().isEmpty()) {
             pointsInfo = result.toString();
         }
 
