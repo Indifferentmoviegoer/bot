@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-group 'com.tt.bot'
+group 'ru.tinkoff.telegram.bot.BotApplication'
 version '0.1.5'
 
 repositories {
