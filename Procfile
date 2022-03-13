@@ -1,1 +1,1 @@
-worker: java -Xmx300m -Xss512k -XX:CICompilerCount=2 -Dfile.encoding=UTF-8 -cp ./target/classes:./target/dependency/com.tt.bot.Main
+worker: java -jar build/libs/tinkoffBot-0.1.4.jar

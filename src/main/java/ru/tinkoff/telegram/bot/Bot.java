@@ -1,4 +1,4 @@
-package com.tt.bot;
+package ru.tinkoff.telegram.bot;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import okhttp3.*;
