@@ -21,7 +21,7 @@ public class Bot extends TelegramLongPollingBot {
             SendMessage message = new SendMessage();
             message.setChatId(update.getMessage().getChatId().toString());
 
-            while (true) {
+//            while (true) {
                 try {
                     message.setText(this.getAvailablePoints());
                 } catch (IOException e) {
@@ -40,12 +40,12 @@ public class Bot extends TelegramLongPollingBot {
                     log.info(e.getMessage());
                 }
 
-                try {
-                    Thread.sleep(600000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
+//                try {
+//                    Thread.sleep(600000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
         }
     }
 
