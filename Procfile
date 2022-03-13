@@ -1,1 +1,1 @@
-web: java -jar build/libs/infoooooooooooooooooo-0.1.3.jar
+worker: java -jar build/libs/infoooooooooooooooooo-0.1.3.jar
