@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'com.tt.bot'
-version '0.1.3'
+version '0.1.4'
 
 repositories {
     mavenCentral()
@@ -20,7 +20,7 @@ dependencies {
 
 jar {
     baseName = 'infoooooooooooooooooo'
-    version = '0.1.3'
+    version = '0.1.4'
     manifest {
         attributes(
                 'Main-Class': 'com.tt.bot.Main'
