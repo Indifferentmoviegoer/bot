@@ -9,6 +9,10 @@ repositories {
     mavenCentral()
 }
 
+tasks.create("stage") {
+    dependsOn("installDist")
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'org.telegram:telegrambots:5.7.1'
