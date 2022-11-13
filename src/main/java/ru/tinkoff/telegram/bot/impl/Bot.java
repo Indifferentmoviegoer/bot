@@ -1,5 +1,6 @@
 package ru.tinkoff.telegram.bot.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.cdimascio.dotenv.Dotenv;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
@@ -10,6 +11,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.tinkoff.telegram.bot.impl.clients.TinkoffGeoApiClient;
+import ru.tinkoff.telegram.bot.impl.models.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,18 +29,19 @@ public class Bot extends TelegramLongPollingBot {
 
             while (true) {
                 try {
-                    for (String point: this.getAvailablePoints()) {
+                    for (String point : this.getAvailablePoints()) {
                         message.setText(point);
                         execute(message);
                     }
 
                 } catch (IOException | TelegramApiException e) {
-                    e.printStackTrace();
                     log.info(e.getMessage());
+                    e.printStackTrace();
                 }
 
                 try {
-                    Thread.sleep(300000);
+                    int timePeriodInMinutes = Integer.parseInt(DOTENV.get("TIME_PERIOD_IN_MINUTES"));
+                    Thread.sleep((long) timePeriodInMinutes * 60 * 1000);
 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -48,7 +51,10 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     public ArrayList<String> getAvailablePoints() throws IOException {
-        String requestBody = "{\"bounds\":{\"bottomLeft\":{\"lat\":44.98991109584412,\"lng\":38.43601977099608},\"topRight\":{\"lat\":45.14221738593136,\"lng\":39.53533922900391}},\"filters\":{\"banks\":[\"tcs\"],\"showUnavailable\":true,\"currencies\":[\"USD\"]},\"zoom\":11}";
+        ObjectMapper mapper = new ObjectMapper();
+        ClusterFilter clusterFilter = configureClusterFilters();
+
+        String requestBody = mapper.writeValueAsString(clusterFilter);
         RequestBody body = RequestBody.create(requestBody, MediaType.parse("application/json; charset=utf-8"));
 
         TinkoffGeoApiClient apiClient = new TinkoffGeoApiClient();
@@ -106,6 +112,63 @@ public class Bot extends TelegramLongPollingBot {
         }
 
         return messages;
+    }
+
+    private ClusterFilter configureClusterFilters() {
+        BottomLeft bottomLeft = configureBottomLeft();
+        TopRight topRight = configureTopRight();
+        Bounds bounds = configureBounds(bottomLeft, topRight);
+        Filters filters = configureFilters();
+
+        ClusterFilter clusterFilter = new ClusterFilter();
+        clusterFilter.setBounds(bounds);
+        clusterFilter.setFilters(filters);
+        clusterFilter.setZoom(11);
+
+        return clusterFilter;
+    }
+
+    @NotNull
+    private static Filters configureFilters() {
+        ArrayList<String> banks = new ArrayList<>();
+        banks.add("tcs");
+
+        ArrayList<String> currencies = new ArrayList<>();
+        currencies.add("USD");
+
+        Filters filters = new Filters();
+        filters.setBanks(banks);
+        filters.setShowUnavailable(false);
+        filters.setCurrencies(currencies);
+
+        return filters;
+    }
+
+    @NotNull
+    private static Bounds configureBounds(BottomLeft bottomLeft, TopRight topRight) {
+        Bounds bounds = new Bounds();
+        bounds.setBottomLeft(bottomLeft);
+        bounds.setTopRight(topRight);
+
+        return bounds;
+    }
+
+    @NotNull
+    private static TopRight configureTopRight() {
+        TopRight topRight = new TopRight();
+        topRight.setLat(45.14221738593136);
+        topRight.setLng(39.53533922900391);
+
+        return topRight;
+    }
+
+    @NotNull
+    private static BottomLeft configureBottomLeft() {
+        BottomLeft bottomLeft = new BottomLeft();
+        bottomLeft.setLat(44.98991109584412);
+        bottomLeft.setLng(38.43601977099608);
+
+        return bottomLeft;
     }
 
 
