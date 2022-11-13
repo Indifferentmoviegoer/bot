@@ -1,16 +1,18 @@
-package ru.tinkoff.telegram.bot;
+package ru.tinkoff.telegram.bot.impl;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import ru.tinkoff.telegram.bot.impl.clients.TinkoffGeoApiClient;
 
 import java.io.IOException;
-import java.util.Objects;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 public class Bot extends TelegramLongPollingBot {
@@ -25,25 +27,19 @@ public class Bot extends TelegramLongPollingBot {
 
             while (true) {
                 try {
-                    message.setText(this.getAvailablePoints());
-                } catch (IOException e) {
+                    for (String point: this.getAvailablePoints()) {
+                        message.setText(point);
+                        execute(message);
+                    }
+
+                } catch (IOException | TelegramApiException e) {
                     e.printStackTrace();
-
-                    log.info(e.getMessage());
-                }
-
-                try {
-
-                    execute(message);
-
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-
                     log.info(e.getMessage());
                 }
 
                 try {
                     Thread.sleep(300000);
+
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -51,26 +47,23 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    public String getAvailablePoints() throws IOException {
-        String pointsInfo = "Ничего не найдено :(";
+    public ArrayList<String> getAvailablePoints() throws IOException {
+        String requestBody = "{\"bounds\":{\"bottomLeft\":{\"lat\":44.98991109584412,\"lng\":38.43601977099608},\"topRight\":{\"lat\":45.14221738593136,\"lng\":39.53533922900391}},\"filters\":{\"banks\":[\"tcs\"],\"showUnavailable\":true,\"currencies\":[\"USD\"]},\"zoom\":11}";
+        RequestBody body = RequestBody.create(requestBody, MediaType.parse("application/json; charset=utf-8"));
 
-        OkHttpClient client = new OkHttpClient();
+        TinkoffGeoApiClient apiClient = new TinkoffGeoApiClient();
+        JSONObject jsonBody = apiClient.request(ApiMethodConstants.POST_REQUEST, body);
 
-        String json = "{\"bounds\":{\"bottomLeft\":{\"lat\":44.98991109584412,\"lng\":38.43601977099608},\"topRight\":{\"lat\":45.14221738593136,\"lng\":39.53533922900391}},\"filters\":{\"banks\":[\"tcs\"],\"showUnavailable\":true,\"currencies\":[\"USD\"]},\"zoom\":11}";
-        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json);
-        Request request = new Request.Builder()
-                .url("https://api.tinkoff.ru/geo/withdraw/clusters")
-                .post(body)
-                .build();
-
-        Response response = client.newCall(request).execute();
-        String textResponse = Objects.requireNonNull(response.body()).string();
-
-        JSONObject jsonBody = new JSONObject(textResponse);
         JSONObject payload = jsonBody.getJSONObject("payload");
         JSONArray clusters = payload.getJSONArray("clusters");
 
-        StringBuilder result = new StringBuilder();
+        return getResult(clusters);
+    }
+
+    @NotNull
+    private static ArrayList<String> getResult(JSONArray clusters) {
+        ArrayList<String> messages = new ArrayList<>();
+
         for (Object cluster : clusters) {
             JSONObject clusterJson = (JSONObject) cluster;
 
@@ -78,6 +71,7 @@ public class Bot extends TelegramLongPollingBot {
 
             for (Object point : points) {
                 JSONObject pointJson = (JSONObject) point;
+                StringBuilder result = new StringBuilder();
 
                 result
                         .append("Банк: ")
@@ -104,17 +98,16 @@ public class Bot extends TelegramLongPollingBot {
                             .append(" \n")
                             .append("Доступная сумма: ")
                             .append(limitJson.getBigInteger("amount"))
-                            .append(" \n\n");
+                            .append(" \n");
                 }
+                messages.add(result.toString());
             }
+
         }
 
-        if (!result.toString().isEmpty()) {
-            pointsInfo = result.toString();
-        }
-
-        return pointsInfo;
+        return messages;
     }
+
 
     @Override
     public String getBotUsername() {
