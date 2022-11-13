@@ -1,6 +1,6 @@
 package ru.tinkoff.telegram.bot.impl.models;
 
-public class ClusterFilter {
+public class ClusterFilters {
     private Bounds bounds;
     private Filters filters;
     private Integer zoom;

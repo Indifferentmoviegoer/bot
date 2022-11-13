@@ -16,7 +16,7 @@ abstract class AbstractApiClient implements ApiClientInterface {
         this.client = new OkHttpClient();
     }
 
-    public JSONObject request(String method, RequestBody body) throws IOException {
+    public String request(String method, RequestBody body) throws IOException {
         Request request = new Request.Builder()
                 .url(this.url)
                 .method(method, body)
@@ -25,7 +25,7 @@ abstract class AbstractApiClient implements ApiClientInterface {
         return this.getResponse(request);
     }
 
-    public JSONObject request(String method) throws IOException {
+    public String request(String method) throws IOException {
         Request request = new Request.Builder()
                 .url(this.url)
                 .method(method, null)
@@ -34,10 +34,9 @@ abstract class AbstractApiClient implements ApiClientInterface {
         return this.getResponse(request);
     }
 
-    public JSONObject getResponse(Request request) throws IOException {
+    public String getResponse(Request request) throws IOException {
         Response response = this.client.newCall(request).execute();
-        String textResponse = Objects.requireNonNull(response.body()).string();
 
-        return new JSONObject(textResponse);
+        return Objects.requireNonNull(response.body()).string();
     }
 }

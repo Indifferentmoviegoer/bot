@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.cdimascio.dotenv.Dotenv;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -52,58 +50,52 @@ public class Bot extends TelegramLongPollingBot {
 
     public ArrayList<String> getAvailablePoints() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        ClusterFilter clusterFilter = configureClusterFilters();
+        ClusterFilters clusterFilter = configureClusterFilters();
 
         String requestBody = mapper.writeValueAsString(clusterFilter);
         RequestBody body = RequestBody.create(requestBody, MediaType.parse("application/json; charset=utf-8"));
 
         TinkoffGeoApiClient apiClient = new TinkoffGeoApiClient();
-        JSONObject jsonBody = apiClient.request(ApiMethodConstants.POST_REQUEST, body);
+        String jsonResponse = apiClient.request(ApiMethodConstants.POST_REQUEST, body);
 
-        JSONObject payload = jsonBody.getJSONObject("payload");
-        JSONArray clusters = payload.getJSONArray("clusters");
+        ClusterResponse clusterResponse = mapper.readValue(jsonResponse, ClusterResponse.class);
+        Payload payload = clusterResponse.getPayload();
+
+        Clusters[] clusters = payload.getClusters();
 
         return getResult(clusters);
     }
 
     @NotNull
-    private static ArrayList<String> getResult(JSONArray clusters) {
+    private static ArrayList<String> getResult(Clusters[] clusters) {
         ArrayList<String> messages = new ArrayList<>();
 
-        for (Object cluster : clusters) {
-            JSONObject clusterJson = (JSONObject) cluster;
-
-            JSONArray points = clusterJson.getJSONArray("points");
-
-            for (Object point : points) {
-                JSONObject pointJson = (JSONObject) point;
+        for (Clusters cluster : clusters) {
+            for (Points point : cluster.getPoints()) {
                 StringBuilder result = new StringBuilder();
 
                 result
                         .append("Банк: ")
-                        .append(pointJson.getJSONObject("brand").getString("name"))
+                        .append(point.getBrand().getName())
                         .append(" \n")
                         .append("Адрес: ")
-                        .append(pointJson.getString("address"))
+                        .append(point.getAddress())
                         .append(" \n");
 
-                JSONArray limits = pointJson.getJSONArray("limits");
-
-                for (Object limit : limits) {
-                    JSONObject limitJson = (JSONObject) limit;
+                for (Limits limit : point.getLimits()) {
 
                     result
                             .append("Валюта: ")
-                            .append(limitJson.getString("currency"))
+                            .append(limit.getCurrency())
                             .append(" \n")
                             .append("Лимиты: ")
-                            .append(limitJson.getBigInteger("max"))
+                            .append(limit.getMax())
                             .append(" \n")
                             .append("Номиналы: ")
-                            .append(limitJson.getJSONArray("denominations"))
+                            .append(limit.getDenominations())
                             .append(" \n")
                             .append("Доступная сумма: ")
-                            .append(limitJson.getBigInteger("amount"))
+                            .append(limit.getAmount())
                             .append(" \n");
                 }
                 messages.add(result.toString());
@@ -114,13 +106,14 @@ public class Bot extends TelegramLongPollingBot {
         return messages;
     }
 
-    private ClusterFilter configureClusterFilters() {
+    private ClusterFilters configureClusterFilters() {
         BottomLeft bottomLeft = configureBottomLeft();
         TopRight topRight = configureTopRight();
+
         Bounds bounds = configureBounds(bottomLeft, topRight);
         Filters filters = configureFilters();
 
-        ClusterFilter clusterFilter = new ClusterFilter();
+        ClusterFilters clusterFilter = new ClusterFilters();
         clusterFilter.setBounds(bounds);
         clusterFilter.setFilters(filters);
         clusterFilter.setZoom(11);
@@ -170,7 +163,6 @@ public class Bot extends TelegramLongPollingBot {
 
         return bottomLeft;
     }
-
 
     @Override
     public String getBotUsername() {
